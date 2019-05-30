@@ -167,6 +167,31 @@ void loop()
     Serial.println("Message Sent");
     }
 
+//
+//    if (THRESHOLD == 60)
+//    {
+//      
+//      setMovement(1, 0, 2); 
+//      setMovement(2, 0, 2); 
+//      setMovement(3, 0, 1); 
+//      setMovement(4, 0, 2); 
+//      setMovement(5, 0, 3); 
+//      
+//    CAN.sendMsgBuf(txID,1, 8, rate);
+//    CAN.sendMsgBuf(txID,1, 8, pos);  
+//    Serial.println("Message Sent");
+//    }
+
+
+
+
+
+
+
+
+
+
+
     if(val == 'k')
     {
     CAN.sendMsgBuf(txID,1,8, Stop);

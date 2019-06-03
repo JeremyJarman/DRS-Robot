@@ -55,6 +55,12 @@ void loop() {
        myservo.attach(9);
        myservo.write(180);
       }
+    
+    if (val == 'g') //if value input is equals to d
+      {
+       myservo.attach(9);
+       myservo.write(90);
+      }
 
     
      

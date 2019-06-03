@@ -10,7 +10,7 @@ const int SPI_CS_PIN = 9;
 // Build an ID or PGN
 
 long unsigned int txID = 0x1881ABBA; // This format is typical of a 29 bit identifier.. the most significant digit is never greater than one.
-unsigned char stmp[8] = {0x0E, 0x00, 0xFF, 0x22, 0xE9, 0xFA, 0xDD, 0x51};
+
 unsigned char rate[8] = {'r', 0, 0, 0, 0, 0, 0, 0};
 unsigned char pos[8] = {'p',0,0,0,0,0,0,0};
 unsigned char Stop[8] ={'s',0,0,0,0,0,0,0};

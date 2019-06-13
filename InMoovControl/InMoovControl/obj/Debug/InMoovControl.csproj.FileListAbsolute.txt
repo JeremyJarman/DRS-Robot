@@ -1,0 +1,10 @@
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\bin\Debug\InMoovControl.exe.config
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\bin\Debug\InMoovControl.exe
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\bin\Debug\InMoovControl.pdb
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\obj\Debug\InMoovControl.csprojAssemblyReference.cache
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\obj\Debug\InMoovControl.Form1.resources
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\obj\Debug\InMoovControl.Properties.Resources.resources
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\obj\Debug\InMoovControl.csproj.GenerateResource.cache
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\obj\Debug\InMoovControl.csproj.CoreCompileInputs.cache
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\obj\Debug\InMoovControl.exe
+C:\Users\jjarm\source\repos\InMoovControl\InMoovControl\obj\Debug\InMoovControl.pdb

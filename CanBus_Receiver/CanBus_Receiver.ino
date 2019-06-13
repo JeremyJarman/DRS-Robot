@@ -267,12 +267,12 @@ void UpdateServos(){
 
 void Actuate(int i, char p)
 {
- if(i ==1)
+ if(i ==5)
  { servoLittleFinger.attach(LITTLEPIN);
    servoLittleFinger.write(p);
    delay(1);
  }
- else if (i == 2)
+ else if (i == 4)
  {
   servoRingFinger.attach(RINGPIN);
   servoRingFinger.write(p);
@@ -284,7 +284,7 @@ void Actuate(int i, char p)
   servoMiddleFinger.write(p);
   delay(1);
  }
- else if (i == 4)
+ else if (i == 2)
  {
   servoIndexFinger.attach(INDEXPIN);
   servoIndexFinger.write(p);

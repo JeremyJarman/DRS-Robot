@@ -7,14 +7,54 @@
 
 const int SPI_CS_PIN = 9;
 
-// Build an ID or PGN
 
-long unsigned int txID = 0x1881ABBA; // This format is typical of a 29 bit identifier.. the most significant digit is never greater than one.
-
-unsigned char rate[8] = {'r', 0, 0, 0, 0, 0, 0, 0};
+long unsigned int RightArmID = 0x1881ABBA; // This format is typical of a 29 bit identifier.. the most significant digit is never greater than one.
+long unsigned int LeftArmID = 0x1881AAAA;
+//unsigned char rate[8] = {'r', 0, 0, 0, 0, 0, 0, 0};
 unsigned char pos[8] = {'p',0,0,0,0,0,0,0};
 unsigned char Stop[8] ={'s',0,0,0,0,0,0,0};
+
+//LeftEblow Arduino is responsible for middle index thumb ring little bicep
+//At pins 3,5,6,9,10,11
+//We need to send six servo values to this arduino
+
+unsigned char LeftArm [6] = {0,0,0,0,0,65};
+
+
+//Left Shoulder is responsible for Flex and Circumduction
+//At pins 10 and 11 respectively
+
+unsigned char LeftShoulder [2] = {0,90};
+
+
+//Head and Transmitter Arduinio is responsible for Head movement Pan and Tilt and CAN msg distribution
+//At Pins 3 and 5
+
+unsigned char Head [2] = {50,90};
+
+//Right Shoulder is responsible for Flex and Circumduction
+//At pins 10 and 11 respectively
+
+unsigned char RightShoulder [2] = {0,90};
+
+//RightArm Arduino is responsible for 
+//At pins???????????????????????????
+//We need to send six servo values to this arduino
+
+unsigned char RightArm [6] = {0,0,0,0,0,65};
+
+//Now we need an array for all the values combined as recieved from C#
+
+unsigned char AllPos [22] = {10,0,0,0,100,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+
+
 int val;
+int led = 13; // the pin the LED is connected to
+
+
+
+  
 
 
 //Construct a MCP_CAN Object and set Chip Select to 10.
@@ -29,8 +69,8 @@ void PrintMovements ()
           Serial.print(i);
           Serial.print("Servo Position");
           Serial.print(pos[i]);
-          Serial.print("Servo Rate");
-          Serial.print(rate[i]);
+          //Serial.print("Servo Rate");
+          //Serial.print(rate[i]);
           Serial.println();
           //myservo.write(buf[i]);              // tell servo to go to position in variable 'pos'
           delay(30);
@@ -40,165 +80,116 @@ void PrintMovements ()
 void setMovement(int servo, char p, char r)
 {
   pos[servo] = p;
-  rate[servo] = r;
+  //rate[servo] = r;
 }
-
-// We want to make 10 adjustments per second
-// Rate is the degrees moved per time step
-
-
-
-void GenerateMovementArray (char ServoNum, int startPos, int endPos, int rate, int Tdelay)
-{
-  int MovementLength = ((endPos - startPos)/rate) + Tdelay;
-  Serial.println("MovementLength");
-  Serial.println(MovementLength);
-  
-  int pos = startPos;
-  //servoNum[0] = pos;
-  Serial.println(pos);
-  
-  
-  for(int i =1; i<MovementLength; i++)    // generate the MovementArray
-        {
-          if(i < Tdelay) {
-            pos = pos;
-            Serial.println(pos);
-           // servoNum[i] = pos;
-            }
-           else{
-          pos = pos  + rate;
-          //ervoNum[i] = pos;
-          Serial.println(pos);
-           }
-        }
-}
-
 
 
 
 void setup()
 {
-    Serial.begin(115200);
-
+//    pinMode(led, OUTPUT); // Declare the LED as an output
+   Serial.begin(115200);
+//
     while (CAN_OK != CAN.begin(CAN_250KBPS))              // init can bus : baudrate = 250K
     {
         Serial.println("CAN BUS Module Failed to Initialized");
         Serial.println("Retrying....");
         delay(200);
-        
     }
     Serial.println("CAN BUS Shield init ok!");
+    digitalWrite(led, HIGH); // Turn the LED on
+
+
 }
 
 
 void loop()
-{   //Serial.println("In loop");
+{   
+}// End of Loop
 
-    // send the data:  id = 0x00, Extended Frame, data len = 8, stmp: data buf
-    // Extended Frame = 1.
-    // then read the serial value
+//"Tilt", "Pan","LFlex", "LAdd","LCirc", "LBicep", "LWrist", "LThumb", "LIndex","LMiddle", "LRing", "LLittle", "Flex", "Add","Circ", "Bicep", "Wrist", "Thumb", "Index","Middle", "Ring", "Little"
 
-//Prints the Current Movement Values
-
-  if (Serial.available()) // if serial value is available 
-  {
-    val = Serial.read();
-    if (val == 'p') //if value input is equals to d
-    {
-     PrintMovements();   
-    }
+void Decode (String msgIn)
+{
+  String msg = msgIn;
+  //msg.remove(msg.lastIndexOf("1"));
   
+//   #35#85#0#0#110#65#0#0#0#0#0#0#0#0#110#65#0#0#0#0#0#0
+   int arraySize = sizeof(AllPos) / sizeof(AllPos[0]);
+   
+   for(int i = arraySize; i>0; i--)    // print the data
+     {
+          
+          String msgRemainder = msg;
+          //Serial.println("Msg at start" + msgRemainder);
+          msgRemainder.remove(msgRemainder.lastIndexOf("#"));
+          //Serial.println("Trimmed Msg " + msgRemainder);
+          String target = msg;
+          target.remove(0,target.lastIndexOf("#")+1); 
+          
+          //Serial.println("Target" + target);
+          //Serial.println(target.toInt());
+          
+          
+          UpdateAllPos(i-1,target.toInt());
+          msg = msgRemainder;
+       }
 
-// Updates the current Movement Values
+      PrintAllPos();
+}
 
-    if (val == 'u') //if value input is equals to a
+
+void serialEvent()
+{
+   String incommingMsg = Serial.readString();
+   Decode(incommingMsg); 
+   AsignValues();
+   DistributeMsgs ();
+}
+
+void UpdateAllPos(int i , int p)
+{
+  char y = p;
+  AllPos[i] = y;
+} 
+
+void PrintAllPos()
+{
+    for(int i = 0; i < 22; i++)
     {
-      setMovement(1, 000, 2); 
-      setMovement(2, 000, 2); 
-      setMovement(3, 180, 1); 
-      setMovement(4, 90, 2); 
-      setMovement(5, 001, 3); 
+      Serial.println(AllPos[i]);
     }
+}
 
-   if (val == 'q') //if value input is equals to a
-    {
-      setMovement(1, 1, 2); 
-      setMovement(2, 1, 2); 
-      setMovement(3, 1, 1); 
-      setMovement(4, 1, 2); 
-      setMovement(5, 1, 3); 
-    }
 
-   if (val == 'w') //if value input is equals to a
-    {
-      setMovement(1, 80, 2); 
-      setMovement(2, 0, 2); 
-      setMovement(3, 0, 1); 
-      setMovement(4, 0, 2); 
-      setMovement(5, 0, 3); 
-    }
+//"Tilt", "Pan","LFlex", "LAdd","LCirc", "LBicep", "LWrist", "LThumb", "LIndex","LMiddle", "LRing", "LLittle", "Flex", "Add","Circ", "Bicep", "Wrist", "Thumb", "Index","Middle", "Ring", "Little"
+void AsignValues ()
+{
 
-       if (val == 'e') //if value input is equals to a
-    {
-      setMovement(1, 120, 2); 
-      setMovement(2, 120, 2); 
-      setMovement(3, 120, 1); 
-      setMovement(4, 120, 2); 
-      setMovement(5, 120, 3); 
-    }
+Head[0] = AllPos[1];//Pan
+Head[1] = AllPos[0];//Tilt
+LeftShoulder[0] = AllPos[2];//LFLex
+LeftShoulder[1] = AllPos[4];//LCirc
+LeftArm[0] = AllPos[5];//LBicep
+LeftArm[1] = AllPos[7];//LThumb
+LeftArm[2] = AllPos[8];//LIndex
+LeftArm[3] = AllPos[9];//LMiddle
+LeftArm[4] = AllPos[10];//LRing
+LeftArm[5] = AllPos[11];//LLittle
+RightShoulder[0] = AllPos[12];//RFlex
+RightShoulder[1]= AllPos[14];//RCirc
+RightArm[0] = AllPos[15];//LBicep
+RightArm[1] = AllPos[17];//LThumb
+RightArm[2] = AllPos[18];//LIndex
+RightArm[3] = AllPos[19];//LMiddle
+RightArm[4] = AllPos[20];//LRing
+RightArm[5] = AllPos[21];//LLittle
+Serial.println("Values Assigned");
+}
 
-       if (val == 'r') //if value input is equals to a
-    {
-      setMovement(1, 0, 2); 
-      setMovement(2, 0, 2); 
-      setMovement(3, 1, 1); 
-      setMovement(4, 0, 2); 
-      setMovement(5, 0, 3); 
-    }
-
- 
-// Send Cunrrent Movement Values as CAN MSG
-
-    if (val == 's')
-    {
-    CAN.sendMsgBuf(txID,1, 8, rate);
-    CAN.sendMsgBuf(txID,1, 8, pos);  
+void DistributeMsgs () 
+{
+    CAN.sendMsgBuf(RightArmID,1, 6, RightArm);  
+    CAN.sendMsgBuf(LeftArmID,1,6, LeftArm);
     Serial.println("Message Sent");
-    }
-
-//
-//    if (THRESHOLD == 60)
-//    {
-//      
-//      setMovement(1, 0, 2); 
-//      setMovement(2, 0, 2); 
-//      setMovement(3, 0, 1); 
-//      setMovement(4, 0, 2); 
-//      setMovement(5, 0, 3); 
-//      
-//    CAN.sendMsgBuf(txID,1, 8, rate);
-//    CAN.sendMsgBuf(txID,1, 8, pos);  
-//    Serial.println("Message Sent");
-//    }
-
-
-
-
-
-
-
-
-
-
-
-    if(val == 'k')
-    {
-    CAN.sendMsgBuf(txID,1,8, Stop);
-    Serial.println("Kill Msg Sent");
-    }
-   // CAN.sendMsgBuf('a') ;
-    delay(25);    // send data every 25mS
-  }
-  
-  }
+}

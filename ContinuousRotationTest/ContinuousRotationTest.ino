@@ -59,7 +59,7 @@ void loop() {
     if (val == 'g') //if value input is equals to d
       {
        myservo.attach(9);
-       myservo.write(90);
+       myservo.write(50);
       }
 
     
